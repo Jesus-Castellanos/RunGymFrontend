@@ -1,0 +1,239 @@
+﻿@model List<RunGymFront.Models.Metas>
+@{
+    ViewBag.Title = "Mis Metas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Metas | RunGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="~/Content/css/MisMetas.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                <div class="card glow">
+                    <div class="card-header text-center">
+                        <h3><i class="fas fa-bullseye me-2"></i>Mis Metas de Transformación</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                                @TempData["SuccessMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        @if (Model.Count == 0)
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-bullseye fa-4x mb-4" style="color: var(--secondary); opacity: 0.5;"></i>
+                                <h4 class="mb-3">No tienes metas establecidas</h4>
+                                <p class="text-muted mb-4">Comienza tu journey de transformación creando una nueva meta</p>
+                                <a class="btn btn-primary" href="@Url.Action("Metas", "Metas")">
+                                    <i class="fas fa-plus-circle me-2"></i>CREAR MI PRIMERA META
+                                </a>
+                            </div>
+                        }
+
+                        @foreach (var meta in Model)
+                        {
+                            var fechaInicio = DateTime.Now; // Esto debería venir de tu modelo
+                            var fechaObjetivo = meta.FechaObjetivo;
+                            var diasRestantes = (fechaObjetivo - DateTime.Now).TotalDays;
+                            var estadoMeta = diasRestantes <= 0 ? (diasRestantes < -7 ? "expired" : "completed") : "active";
+
+                            <div class="meta-container floating">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="fas fa-crosshairs"></i> Meta Principal
+                                                <span class="status-indicator status-@estadoMeta">
+                                                    @if (estadoMeta == "active")
+                                                    {<text>ACTIVA</text>}
+                                                    @if (estadoMeta == "completed")
+                                                    {<text>COMPLETADA</text>}
+                                                    @if (estadoMeta == "expired")
+                                                    {<text>VENCIDA</text>}
+                                                </span>
+                                            </div>
+                                            <div class="meta-value">@meta.MetaPrincipal</div>
+                                        </div>
+
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="fas fa-user"></i> Mi Cuerpo Actual
+                                            </div>
+                                            <div class="meta-value">@meta.CuerpoActual</div>
+                                        </div>
+
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="fas fa-user-astronaut"></i> Cuerpo Deseado
+                                            </div>
+                                            <div class="meta-value">@meta.CuerpoDeseado</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="far fa-calendar-alt"></i> Fecha Inicio
+                                            </div>
+                                            <div class="meta-value">@fechaInicio.ToString("dd/MM/yyyy")</div>
+                                        </div>
+
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="far fa-calendar-check"></i> Fecha Objetivo
+                                            </div>
+                                            <div class="meta-value">@meta.FechaObjetivo.ToString("dd/MM/yyyy")</div>
+                                        </div>
+
+                                        <div class="meta-item">
+                                            <div class="meta-label">
+                                                <i class="fas fa-info-circle"></i> Descripción
+                                            </div>
+                                            <div class="meta-value">@meta.Descripción</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="countdown-container">
+                                    <div class="countdown-label">TIEMPO RESTANTE</div>
+                                    <div class="countdown-value @(estadoMeta == "completed" ? "countdown-completed" : estadoMeta == "expired" ? "countdown-expired" : "")" id="countdown-@meta.Id">
+                                        @if (diasRestantes > 0)
+                                        {
+                                            @Math.Ceiling(diasRestantes) <span>DÍAS</span>
+                                        }
+                                        else if (estadoMeta == "completed")
+                                        {
+                                            <span>¡META CUMPLIDA!</span>
+                                        }
+                                        else
+                                        {
+                                            <span>TIEMPO AGOTADO</span>
+                                        }
+                                    </div>
+                                    <div class="time-info">
+                                        <span>Inicio: @fechaInicio.ToString("dd/MM/yyyy")</span>
+                                        <span>Objetivo: @meta.FechaObjetivo.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+
+                                @if (diasRestantes > 0 && diasRestantes <= 7)
+                                {
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>¡Tu meta está cerca! Solo @Math.Ceiling(diasRestantes) días restantes.
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (Model.Count > 0)
+                        {
+                            <div class="text-center mt-4">
+                                <a class="btn btn-primary" href="@Url.Action("Metas", "Metas")">
+                                    <i class="fas fa-plus-circle me-2"></i>NUEVA META
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Efecto de partículas -->
+    <div id="particles"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Crear partículas flotantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            const colors = ['rgba(0, 242, 254, 0.5)', 'rgba(254, 0, 254, 0.5)', 'rgba(108, 92, 231, 0.5)'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                const size = Math.random() * 8 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                particle.style.animation = `float ${duration}s ${delay}s infinite ease-in-out`;
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Actualizar contadores de tiempo en tiempo real
+    function updateCountdowns() {
+        @foreach (var meta in Model)
+        {
+            @:const fechaObjetivo_@(meta.Id) = new Date("@meta.FechaObjetivo.ToString("yyyy-MM-dd")");
+            @:const countdownElement_@(meta.Id) = document.getElementById('countdown-@meta.Id');
+            @:
+            @:function updateCountdown_@(meta.Id)() {
+            @:    const ahora = new Date();
+            @:    const diff = fechaObjetivo_@(meta.Id) - ahora;
+            @:
+            @:    if (diff > 0) {
+            @:        const dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            @:        countdownElement_@(meta.Id).innerHTML = dias + ' <span>DÍAS</span>';
+            @:        countdownElement_@(meta.Id).className = 'countdown-value';
+            @:    } else if (diff > -7 * 24 * 60 * 60 * 1000) {
+            @:        countdownElement_@(meta.Id).innerHTML = '¡META CUMPLIDA!';
+            @:        countdownElement_@(meta.Id).className = 'countdown-value countdown-completed';
+            @:    } else {
+            @:        countdownElement_@(meta.Id).innerHTML = 'TIEMPO AGOTADO';
+            @:        countdownElement_@(meta.Id).className = 'countdown-value countdown-expired';
+            @:    }
+            @:}
+            @:
+            @:updateCountdown_@(meta.Id)();
+            @:setInterval(updateCountdown_@(meta.Id), 1000 * 60 * 60); // Actualizar cada hora
+        }
+    }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            createParticles();
+            updateCountdowns();
+
+            // Efecto hover para los items de meta
+            const metaItems = document.querySelectorAll('.meta-item');
+            metaItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const icon = item.querySelector('i');
+                    icon.style.transform = 'scale(1.2)';
+                    icon.style.color = 'var(--neon-blue)';
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    const icon = item.querySelector('i');
+                    icon.style.transform = 'scale(1)';
+                    icon.style.color = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
