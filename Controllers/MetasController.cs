@@ -80,10 +80,11 @@ namespace RunGymFront.controllers
                 TempData["Error"] = $"Error en la conexión con la API: {ex.Message}";
                 return RedirectToAction("Iniciar", "Home");
             }
+            var userId = GetLoggedInUserId(token);
+            metas = metas.Where(m => m.IdUsuario.ToString() == userId).ToList();
 
             return View(metas);
         }
-
 
         public ActionResult Metas()
         {
@@ -121,6 +122,7 @@ namespace RunGymFront.controllers
             }
             return View();
         }
+
         // POST: Registro/Metas
         [HttpPost]
         public async Task<ActionResult> MetasCreate(Metas model)
@@ -200,6 +202,5 @@ namespace RunGymFront.controllers
 
             return userIdClaim?.Value;
         }
-
     }
 }
